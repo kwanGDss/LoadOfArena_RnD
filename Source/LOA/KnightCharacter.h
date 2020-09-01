@@ -23,6 +23,4 @@ protected:
 	virtual void LockOn() override;
 
 private:
-	UPROPERTY(EditAnywhere, Category = LockOn, Meta = (AllowPrivateAccess = true))
-	class AActor* EnemyCharacter;
 };

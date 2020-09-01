@@ -17,8 +17,10 @@ class LOA_API AVikingCharacter : public ALOACharacter
 public:
 	AVikingCharacter();
 
+	virtual void Tick(float DeltaTime) override;
+
 protected:
-	
+	virtual void LockOn() override;
+
 private:
-	
 };

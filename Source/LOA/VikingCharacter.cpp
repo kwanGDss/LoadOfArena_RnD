@@ -2,7 +2,9 @@
 
 
 #include "VikingCharacter.h"
+#include "KnightCharacter.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 AVikingCharacter::AVikingCharacter()
 {
@@ -25,4 +27,18 @@ AVikingCharacter::AVikingCharacter()
 	{
 		GetMesh()->SetAnimInstanceClass(Anim_Mannequin.Class);
 	}
+
+	SetEnemyCharacter(AKnightCharacter::StaticClass());
+}
+
+void AVikingCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	
+}
+
+void AVikingCharacter::LockOn()
+{
+	Super::LockOn();
+
 }

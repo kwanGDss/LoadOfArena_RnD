@@ -12,21 +12,42 @@ class ALOACharacter : public ACharacter
 	GENERATED_BODY()
 
 	/** Camera boom positioning the camera behind the character */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = true))
 	class USpringArmComponent* CameraBoom;
 
 	/** Follow camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = true))
 	class UCameraComponent* FollowCamera;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = LockOn, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = LockOn, Meta = (AllowPrivateAccess = true))
 	bool bIsLockOnState;
 
-	class AActor* EnemyCharacter;
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = LockOn, Meta = (AllowPrivateAccess = true))
+	class ALOACharacter* EnemyCharacter;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Transient, Category = Movement, Meta = (AllowPrivateAccess = true))
+	bool bIsRolling;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Transient, Category = Movement, Meta = (AllowPrivateAccess = true))
+	float RollStartedTime;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Transient, Category = Movement, Meta = (AllowPrivateAccess = true))
+	FVector RollDirection;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Transient, Category = Movement, Meta = (AllowPrivateAccess = true))
+	FVector LockOnDirection;
+	
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Transient, Category = Movement, Meta = (AllowPrivateAccess = true))
+	FRotator LockOnRotation;
+	
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Transient, Category = Movement, Meta = (AllowPrivateAccess = true))
+	FRotator InterpToLockOn;
 	
 public:
 	ALOACharacter();
 
+	virtual void Tick(float DeltaTime) override;
+	
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseTurnRate;
@@ -36,6 +57,11 @@ public:
 	float BaseLookUpRate;
 
 	bool IsLockOnState();
+
+	bool IsRolling();
+
+	void SetEnemyCharacter(TSubclassOf<ALOACharacter> EnemyCharacter1);
+	ALOACharacter* GetEnemyCharacter();
 	
 	virtual void AddControllerPitchInput(float Val) override;
 	virtual void AddControllerYawInput(float Val) override;
@@ -63,15 +89,14 @@ protected:
 	 */
 	void LookUpAtRate(float Rate);
 
-	/** Handler for when a touch input begins. */
-	void TouchStarted(ETouchIndex::Type FingerIndex, FVector Location);
-
-	/** Handler for when a touch input stops. */
-	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
-
+	void RollForward(float Value);
+	void RollRight(float Value);
+	
 	void Run();
 
 	void Walk();
+
+	void Roll();
 	
 	virtual void LockOn();
 
