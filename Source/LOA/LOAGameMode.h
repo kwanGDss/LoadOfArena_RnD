@@ -11,6 +11,12 @@ class ALOAGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 
+	//UPROPERTY()
+	//class TSubclassOf<UUserWidget> SteminaWidget;
+
+	//UPROPERTY()
+ //   UUserWidget* CurrentWidget;
+	
 public:
 	ALOAGameMode();
 };

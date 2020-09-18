@@ -10,9 +10,9 @@ AVikingCharacter::AVikingCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	
-	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -93.0f), FRotator(0.0f, -90.0f, 0.0f));
+	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -96.0f), FRotator(0.0f, -90.0f, 0.0f));
 	
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SK_Mannequin(TEXT("/Game/Mannequin/Character/Mesh/SK_Mannequin.SK_Mannequin"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SK_Mannequin(TEXT("/Game/Anim/Knight_Focus_Run_2020_09_05_V1.Knight_Focus_Run_2020_09_05_V1"));
 
 	if (SK_Mannequin.Succeeded())
 	{
@@ -21,7 +21,7 @@ AVikingCharacter::AVikingCharacter()
 
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	
-	static ConstructorHelpers::FClassFinder<UAnimInstance> Anim_Mannequin(TEXT("/Game/Mannequin/Animations/ThirdPerson_AnimBP.ThirdPerson_AnimBP_C"));
+	static ConstructorHelpers::FClassFinder<UAnimInstance> Anim_Mannequin(TEXT("/Game/Anim/Knight_Focus_2020_AnimBP1.Knight_Focus_2020_AnimBP1_C"));
 
 	if (Anim_Mannequin.Succeeded())
 	{

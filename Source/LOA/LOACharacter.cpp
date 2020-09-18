@@ -5,9 +5,13 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
+#include "Components/WidgetComponent.h"
+#include "Components/ProgressBar.h"
+#include "Components/PoseableMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -51,12 +55,13 @@ ALOACharacter::ALOACharacter()
 	CameraBoom->bEnableCameraLag = true;
 	CameraBoom->CameraLagSpeed = 5.0f;
 
-	GetCharacterMovement()->MaxWalkSpeed = 225.0f;
+	GetCharacterMovement()->MaxWalkSpeed = 350.0f;
 
 	bIsLockOnState = false;
 	bIsRolling = false;
 
 	RollStartedTime = 0.0f;
+	RollDelay = 0.0f;
 	RollDirection = FVector::ZeroVector;
 
 	EnemyCharacter = nullptr;
@@ -64,11 +69,66 @@ ALOACharacter::ALOACharacter()
 	LockOnDirection = FVector::ZeroVector;
 	LockOnRotation = FRotator::ZeroRotator;
 	InterpToLockOn = FRotator::ZeroRotator;
+
+	Stamina = 1.0f;
+	bIsShift = false;
+	bIsRunning = false;
+	bIsGuard = false;
+
+	static ConstructorHelpers::FClassFinder<UUserWidget> StaminaWidgetBPClass(TEXT("/Game/UI_Stemina.UI_Stemina_C"));
+	if (StaminaWidgetBPClass.Class != NULL)
+	{
+		StaminaWidget = StaminaWidgetBPClass.Class;
+	}
+
+	if (StaminaWidget != nullptr)
+	{
+		CurrentWidget = CreateWidget<UUserWidget>(GetWorld(), StaminaWidget);
+
+		if (CurrentWidget != nullptr)
+		{
+			CurrentWidget->AddToViewport();
+
+			StaminaProgressBar = Cast<UProgressBar>(CurrentWidget->GetWidgetFromName(TEXT("StaminaBar")));
+			StaminaProgressBar->SetPercent(Stamina);
+		}
+	}
 }
 
 void ALOACharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if(GetCharacterMovement()->IsWalking() && bIsShift)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+		bIsRunning = true;
+	}
+	else
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 350.0f;
+		bIsRunning = false;
+	}
+	
+	if(Stamina <= 0.0f)
+	{
+		bIsRunning = false;
+	}
+	
+	if(bIsRunning && !bIsRolling)
+	{
+		Stamina -= 0.1f * DeltaTime;
+	}
+	else
+	{
+		if(!bIsRolling)
+		{
+			Stamina += 0.2f * DeltaTime;
+		}
+	}
+
+	Stamina = FMath::Clamp(Stamina, 0.0f, 1.0f);
+	StaminaProgressBar->SetPercent(Stamina);
 
 	if (bIsLockOnState)
 	{
@@ -92,16 +152,16 @@ void ALOACharacter::Tick(float DeltaTime)
 
 	if (bIsRolling)
 	{
-		if (RollDirection == FVector::ZeroVector)
-		{
-			RollDirection = -GetActorForwardVector();
-		}
-
 		RollDirection = RollDirection.GetSafeNormal();
 		FRotator RollRotation = UKismetMathLibrary::MakeRotFromX(RollDirection);
 
-		SetActorLocation(FMath::VInterpTo(GetActorLocation(), RollDirection * 50.0f + GetActorLocation(), DeltaTime, 10.0f), true);
+		if (RollDirection == FVector::ZeroVector)
+		{
+			RollDirection = GetActorForwardVector();
+		}
+
 		SetActorRotation(FMath::RInterpTo(GetActorRotation(), RollRotation, DeltaTime, 5.0f));
+		SetActorLocation(FMath::VInterpTo(GetActorLocation(), RollDirection * 50.0f + GetActorLocation(), DeltaTime, 10.0f), true);
 
 		if (GetWorld()->TimeSince(RollStartedTime) >= 1.0f)
 		{
@@ -123,7 +183,14 @@ void ALOACharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInput
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ALOACharacter::Run);
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ALOACharacter::Walk);
 
+	PlayerInputComponent->BindAction("LeftAttack", IE_Pressed, this, &ALOACharacter::LeftAttack);
+	PlayerInputComponent->BindAction("RightAttack", IE_Pressed, this, &ALOACharacter::RightAttack);
+
+	PlayerInputComponent->BindAction("Guard", IE_Pressed, this, &ALOACharacter::Guard);
+
 	PlayerInputComponent->BindAction("Roll", IE_Pressed, this, &ALOACharacter::Roll);
+
+	PlayerInputComponent->BindAxis("RollRight", this, &ALOACharacter::RollRight);
 
 	PlayerInputComponent->BindAxis("RollRight", this, &ALOACharacter::RollRight);
 	PlayerInputComponent->BindAxis("RollForward", this, &ALOACharacter::RollForward);
@@ -187,21 +254,46 @@ void ALOACharacter::OnResetVR()
 
 void ALOACharacter::Run()
 {
-	GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+	bIsShift = true;
 }
 
 void ALOACharacter::Walk()
 {
-	GetCharacterMovement()->MaxWalkSpeed = 225.0f;
+	GetCharacterMovement()->MaxWalkSpeed = 350.0f;
+	bIsRunning = false;
+
+	bIsShift = false;
 }
 
 void ALOACharacter::Roll()
 {
 	if (!bIsRolling)
 	{
+		if(Stamina >= 0.25f)
+		{
+			Stamina -= 0.25f;
+		}
+		else
+		{
+			return;
+		}
+		
 		RollStartedTime = GetWorld()->GetTimeSeconds();
 		bIsRolling = true;
 	}
+}
+
+void ALOACharacter::LeftAttack()
+{
+}
+
+void ALOACharacter::RightAttack()
+{
+}
+
+void ALOACharacter::Guard()
+{
+	bIsGuard = !bIsGuard;
 }
 
 void ALOACharacter::LockOn()
@@ -235,6 +327,8 @@ void ALOACharacter::RollForward(float Value)
 {
 	if (!bIsRolling && Value != 0.0f)
 	{
+		RollDelay = GetWorld()->GetTimeSeconds();
+
 		if (Value > 0)
 		{
 			RollDirection = FRotationMatrix(FRotator(0.0f, GetControlRotation().Yaw, 0.0f)).GetUnitAxis(EAxis::X);
@@ -250,6 +344,8 @@ void ALOACharacter::RollRight(float Value)
 {
 	if (!bIsRolling && Value != 0.0f)
 	{
+		RollDelay = GetWorld()->GetTimeSeconds();
+
 		if (Value > 0)
 		{
 			RollDirection = FRotationMatrix(FRotator(0.0f, GetControlRotation().Yaw, 0.0f)).GetUnitAxis(EAxis::Y);

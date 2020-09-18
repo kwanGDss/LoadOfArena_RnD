@@ -31,17 +31,29 @@ class ALOACharacter : public ACharacter
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Transient, Category = Movement, Meta = (AllowPrivateAccess = true))
 	float RollStartedTime;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Transient, Category = Movement, Meta = (AllowPrivateAccess = true))
-	FVector RollDirection;
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Movement, Meta = (AllowPrivateAccess = true))
+	float RollDelay;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Transient, Category = Movement, Meta = (AllowPrivateAccess = true))
-	FVector LockOnDirection;
+	UPROPERTY()
+	class TSubclassOf<UUserWidget> StaminaWidget;
+
+	UPROPERTY()
+    UUserWidget* CurrentWidget;
+
+	UPROPERTY()
+	bool bIsShift;
 	
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Transient, Category = Movement, Meta = (AllowPrivateAccess = true))
-	FRotator LockOnRotation;
+	UPROPERTY()
+	bool bIsRunning;
+
+	UPROPERTY()
+	bool bIsGuard;
 	
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Transient, Category = Movement, Meta = (AllowPrivateAccess = true))
-	FRotator InterpToLockOn;
+	UPROPERTY()
+	float Stamina;
+	
+	UPROPERTY()
+	class UProgressBar* StaminaProgressBar;
 	
 public:
 	ALOACharacter();
@@ -97,13 +109,30 @@ protected:
 	void Walk();
 
 	void Roll();
+
+	void LeftAttack();
+	void RightAttack();
+
+	void Guard();
 	
 	virtual void LockOn();
 
-protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	// End of APawn interface
+	
+protected:
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Transient, Category = Movement, Meta = (AllowPrivateAccess = true))
+	FVector RollDirection;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Transient, Category = Movement, Meta = (AllowPrivateAccess = true))
+	FVector LockOnDirection;
+	
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Transient, Category = Movement, Meta = (AllowPrivateAccess = true))
+	FRotator LockOnRotation;
+	
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Transient, Category = Movement, Meta = (AllowPrivateAccess = true))
+	FRotator InterpToLockOn;
 
 public:
 	/** Returns CameraBoom subobject **/
