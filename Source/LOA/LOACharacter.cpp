@@ -21,7 +21,7 @@
 ALOACharacter::ALOACharacter()
 {
 	// Set size for collision capsule
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	//GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
@@ -210,7 +210,6 @@ void ALOACharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInput
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &ALOACharacter::OnResetVR);
 }
 
-
 bool ALOACharacter::IsLockOnState()
 {
 	return bIsLockOnState;
@@ -308,7 +307,6 @@ void ALOACharacter::LockOn()
 	{
 		GetCharacterMovement()->bOrientRotationToMovement = true;
 	}
-
 }
 
 void ALOACharacter::TurnAtRate(float Rate)
