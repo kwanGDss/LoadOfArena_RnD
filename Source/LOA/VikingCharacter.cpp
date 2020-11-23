@@ -21,7 +21,7 @@ AVikingCharacter::AVikingCharacter()
 
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	
-	static ConstructorHelpers::FClassFinder<UAnimInstance> Anim_Mannequin(TEXT("/Game/Anim/AnimBP/Knight_Focus_2020_AnimBP1.Knight_Focus_2020_AnimBP2"));
+	static ConstructorHelpers::FClassFinder<UAnimInstance> Anim_Mannequin(TEXT("/Game/Anim/AnimBP/Knight_Focus_2020_AnimBP2.Knight_Focus_2020_AnimBP2_C"));
 
 	if (Anim_Mannequin.Succeeded())
 	{
